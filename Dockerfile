@@ -12,15 +12,26 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-RUN addgroup -S app && adduser -S app -G app
+RUN apk add --no-cache nginx \
+	&& addgroup -S app \
+	&& adduser -S app -G app \
+	&& mkdir -p /tmp/client_temp /tmp/proxy_temp /tmp/fastcgi_temp /tmp/uwsgi_temp /tmp/scgi_temp \
+	&& chown -R app:app /app /tmp/client_temp /tmp/proxy_temp /tmp/fastcgi_temp /tmp/uwsgi_temp /tmp/scgi_temp
 
 COPY --from=build /app/target/*.jar app.jar
+COPY nginx.conf /app/nginx.conf
+COPY nginx-render.conf.template /app/nginx-render.conf.template
+COPY render-entrypoint.sh /app/render-entrypoint.sh
+
+RUN chmod +x /app/render-entrypoint.sh
 
 USER app
 
 ENV JAVA_OPTS=""
-ENV PORT=8080
+ENV PORT=10000
+ENV SERVER_PORT=8080
+ENV SOCKETIO_PORT=9092
 
-EXPOSE 8080
+EXPOSE 10000
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["/app/render-entrypoint.sh"]
