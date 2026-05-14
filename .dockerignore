@@ -1,0 +1,9 @@
+.git
+.github
+.vscode
+.mvn/wrapper/maven-wrapper.jar
+target
+*.log
+.DS_Store
+Dockerfile
+.dockerignore
